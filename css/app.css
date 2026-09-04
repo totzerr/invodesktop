@@ -2170,3 +2170,5 @@ body.invo-modal-open #cartbar{display:none!important}
 .settings-layout,.settings-content{scroll-behavior:auto!important}
 .settings-nav button,.settings-content>*{transition:none!important}
 .settings-nav button.on{font-weight:800!important}
+
+.workspace-signout{margin-top:3px!important;color:#B42318!important}
