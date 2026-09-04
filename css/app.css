@@ -2163,3 +2163,10 @@ body.invo-modal-open #cartbar{display:none!important}
 .top .logo-img{width:108px!important;height:46px!important;object-fit:cover!important;object-position:center!important}
 @media(max-width:759px){.top .logo-img{display:block!important;height:32px!important}.top .logo:before{display:none!important}}
 @media(max-width:759px){.stock-actions .btn{width:100%}.auth-box{padding-top:8px}.auth-welcome b{font-size:23px}.motifs-helper{font-size:10.5px}}
+
+/* SWAY · RÉGLAGES STABLES
+   Le cadre est volontairement fixe : changer de catégorie ne déplace ni ne redimensionne la fenêtre. */
+.settings-sheet{animation:none!important;contain:layout paint}
+.settings-layout,.settings-content{scroll-behavior:auto!important}
+.settings-nav button,.settings-content>*{transition:none!important}
+.settings-nav button.on{font-weight:800!important}
