@@ -1989,7 +1989,6 @@ function renderDashboardGeneral(){
  const debutJour=new Date();debutJour.setHours(0,0,0,0);
  const ventesJour=mouvements.filter(function(m){return m.motif==='vente'&&new Date(m.ts)>=debutJour});
  const caJour=ventesJour.reduce(function(s,m){return s+pvMv(m)},0);
- const nom=(st.who||'').split(' ')[0]||'';
  const performanceHebdomadaire=blocPerformanceHebdomadaireDashboard(maintenant);
  const priorite=ruptures.length?{titre:ruptures.length+' rupture'+(ruptures.length>1?'s':''),detail:ruptures.slice(0,2).map(function(p){return p.n}).join(' · '),action:'Voir le stock',screen:'stock',etat:'critical'}:sousSeuil.length?{titre:sousSeuil.length+' sous seuil',detail:sousSeuil.slice(0,2).map(function(p){return p.n}).join(' · '),action:'Préparer la commande',screen:'cmd',etat:'watch'}:commandesARecevoir.length?{titre:commandesARecevoir.length+' réception'+(commandesARecevoir.length>1?'s':''),detail:'Quantités à contrôler',action:'Réceptionner',screen:'liv',commandeId:commandesARecevoir[0].id,etat:'pending'}:aVerifier.length?{titre:aVerifier.length+' vente'+(aVerifier.length>1?'s':'')+' à classer',detail:'Offert, perte ou annulation',action:'Ouvrir la caisse',screen:'caisse',etat:'review'}:{titre:'Tout est prêt.',detail:'Aucune action urgente pour le moment.',action:'Voir le stock',screen:'stock',etat:'clear'};
  const attr=priorite.commandeId?'data-dashreceive="'+priorite.commandeId+'"':'data-dashgo="'+priorite.screen+'"';
@@ -1998,22 +1997,29 @@ function renderDashboardGeneral(){
  commandesARecevoir.slice(0,2).forEach(function(c){actions.push('<button data-dashreceive="'+c.id+'"><span>Réception · '+escapeHTML(c.fournisseur||'Fournisseur')+'</span><i>›</i></button>')});
  aVerifier.slice(0,2).forEach(function(m){actions.push('<button data-dashgo="caisse"><span>À classer · '+escapeHTML(m.platN||'Vente')+'</span><i>›</i></button>')});
  commandesEnCours.filter(function(c){return !commandesARecevoir.some(function(a){return a.id===c.id})}).slice(0,1).forEach(function(c){actions.push('<button data-dashgo="cmd"><span>Commande en cours · '+escapeHTML(c.fournisseur||'Fournisseur')+'</span><i>›</i></button>')});
- const actionRows=actions.length?actions.slice(0,3).join(''):'<div class="dash-actions-empty">Rien à faire maintenant.</div>';
+ const actionRows=actions.length?actions.slice(0,4).join(''):'<div class="dash-actions-empty">Rien à faire maintenant.</div>';
  const date=maintenant.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}),heure=maintenant.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
- const titre=priorite.etat==='clear'?'Bonjour.':'À traiter maintenant.';
- const demo='';
- document.getElementById('s-dash').innerHTML=demo+'<div class="dashboard-new">'
- +performanceHebdomadaire
- +meteoAccueilHTML()
- +recapMatinHTML()
- +'<section class="dash-head"><div><div class="dash-eyebrow"><i></i>VUE D’ENSEMBLE · '+date.toUpperCase()+'</div><h1>'+titre+'</h1><p>'+escapeHTML(priorite.detail)+'</p><button class="dash-main-action" '+attr+'>'+priorite.action+' <i>›</i></button></div><aside class="dash-sales"><small>VENTES AUJOURD’HUI</small><b>'+fmt(caJour)+' €</b><span>'+ventesJour.length+' vente'+(ventesJour.length>1?'s':'')+' enregistrée'+(ventesJour.length>1?'s':'')+'</span><time>Actualisé · '+heure+'</time></aside></section>'
- +'<section class="dash-kpis" aria-label="Raccourcis de suivi">'
- +'<button class="dash-kpi '+(ruptures.length?'critical':'clear')+'" data-dashgo="stock"><small>RUPTURES</small><b>'+ruptures.length+'</b><span>'+(ruptures.length?'À traiter':'Stock stable')+'<i>›</i></span></button>'
- +'<button class="dash-kpi '+(sousSeuil.length?'watch':'clear')+'" data-dashgo="cmd"><small>SOUS SEUIL</small><b>'+sousSeuil.length+'</b><span>'+(sousSeuil.length?'À anticiper':'Rien à commander')+'<i>›</i></span></button>'
- +'<button class="dash-kpi '+(commandesARecevoir.length?'pending':'clear')+'" data-dashgo="liv"><small>RÉCEPTIONS</small><b>'+commandesARecevoir.length+'</b><span>'+(commandesARecevoir.length?'À contrôler':'Aucune prévue')+'<i>›</i></span></button>'
- +'<button class="dash-kpi '+(aVerifier.length?'review':'clear')+'" data-dashgo="caisse"><small>À CLASSER</small><b>'+aVerifier.length+'</b><span>'+(aVerifier.length?'Caisse à vérifier':'Caisse à jour')+'<i>›</i></span></button></section>'
- +'<section class="dash-grid"><section class="dash-panel"><header class="dash-panel-head"><div><small>STOCK</small><b>À surveiller</b></div><button data-dashgo="stock">Voir le stock</button></header><div class="dash-list">'+stockRows+'</div></section><aside class="dash-side"><section class="dash-actions"><small>PROCHAINES ACTIONS</small><b>À faire</b>'+actionRows+'</section></aside></section>'
- +'<section class="dash-cash"><div class="dash-cash-copy"><i>€</i><div><small>CAISSE</small><b>'+fmt(caJour)+' € aujourd’hui</b><span>'+aVerifier.length+' mouvement'+(aVerifier.length>1?'s':'')+' à classer</span></div></div><button data-dashgo="caisse">Ouvrir la caisse</button></section>'+adminWidgetAccueil()+'</div>';
+ const service=st.serviceActif&&st.serviceActif.id?st.serviceActif:null;
+ const serviceTexte=service?'Service '+(service.type==='midi'?'du midi':'du soir')+' en cours':'Aucun service ouvert';
+ const stockDetail=ruptures.length?ruptures.length+' rupture'+(ruptures.length>1?'s':'')+' à traiter':sousSeuil.length?sousSeuil.length+' sous le seuil':'Aucun niveau critique';
+ const carteAujourdHui=function(icone,libelle,valeur,detail,ecran,etat){return '<button class="dash-now-row '+etat+'" data-dashgo="'+ecran+'"><span class="dash-now-icon">'+icone+'</span><span class="dash-now-copy"><small>'+libelle+'</small><b>'+valeur+'</b><em>'+detail+'</em></span><i aria-hidden="true">›</i></button>'};
+ const decisions=[];
+ if(ruptures.length)decisions.push(['Réapprovisionner '+ruptures.length+' article'+(ruptures.length>1?'s':''),'Stock critique','Commander','cmd']);
+ if(commandesARecevoir.length)decisions.push(['Contrôler '+commandesARecevoir.length+' réception'+(commandesARecevoir.length>1?'s':''),'Arrivée attendue','Réceptionner','liv']);
+ if(aVerifier.length)decisions.push(['Classer '+aVerifier.length+' sortie'+(aVerifier.length>1?'s':''),'Caisse à vérifier','Traiter','caisse']);
+ if(sousSeuil.length&&!ruptures.length)decisions.push(['Anticiper '+sousSeuil.length+' produit'+(sousSeuil.length>1?'s':''),'Sous le seuil','Voir le stock','stock']);
+ const decisionRows=decisions.length?decisions.slice(0,4).map(function(d){return '<button class="dash-decision-row" data-dashgo="'+d[3]+'"><span><b>'+d[0]+'</b><small>'+d[1]+'</small></span><em>'+d[2]+'</em><i aria-hidden="true">›</i></button>'}).join(''):'<div class="dash-actions-empty">Aucune décision urgente. Les données enregistrées sont à jour.</div>';
+ document.getElementById('s-dash').innerHTML='<div class="dashboard-new dash-direction-3">'
+ +'<header class="dash-d3-head"><div><small>VUE GÉNÉRALE</small><h1>Bonjour</h1><p>'+date.charAt(0).toUpperCase()+date.slice(1)+' · Actualisé à '+heure+'</p></div><div class="dash-d3-service"><i></i><span>'+serviceTexte+'</span><button data-dashgo="dec">Voir le service</button></div></header>'
+ +'<div class="dash-d3-layout"><nav class="dash-d3-rail" aria-label="Raccourcis"><button class="active" data-dashgo="dash"><span>✓</span>À décider</button><button data-dashgo="liv"><span>⇩</span>Réceptions</button><button data-dashgo="cmd"><span>□</span>Commandes</button><button data-dashgo="stock"><span>◇</span>Stock</button><button data-dashgo="bil"><span>⌁</span>Analyse</button></nav>'
+ +'<div class="dash-d3-content"><section class="dash-d3-top"><section class="dash-today"><header><small>AUJOURD’HUI</small><b>Les essentiels</b></header>'
+ +carteAujourdHui('€','VENTES ENREGISTRÉES',fmt(caJour)+' €',ventesJour.length+' vente'+(ventesJour.length>1?'s':'')+' enregistrée'+(ventesJour.length>1?'s':''),'caisse','sales')
+ +carteAujourdHui('!','STOCK À SURVEILLER',ruptures.length+sousSeuil.length+' article'+(ruptures.length+sousSeuil.length>1?'s':''),stockDetail,'stock',ruptures.length?'critical':'watch')
+ +carteAujourdHui('↓','RÉCEPTIONS ATTENDUES',String(commandesARecevoir.length),commandesARecevoir.length?'À contrôler avant l’entrée en stock':'Aucune réception prévue','liv','receive')
+ +'</section><section class="dash-d3-performance">'+performanceHebdomadaire+'</section></section>'
+ +'<section class="dash-d3-decisions"><header><div><small>À DÉCIDER</small><b>Les prochaines actions</b></div><button '+attr+'>'+priorite.action+'</button></header><div class="dash-d3-decision-list">'+decisionRows+'</div></section>'
+ +'<section class="dash-d3-bottom"><section class="dash-panel"><header class="dash-panel-head"><div><small>STOCK</small><b>À surveiller</b></div><button data-dashgo="stock">Voir le stock</button></header><div class="dash-list">'+stockRows+'</div></section><section class="dash-actions"><small>PROCHAINES ÉTAPES</small><b>À faire</b>'+actionRows+'</section></section>'
+ +'</div></div>'+adminWidgetAccueil()+'</div>';
  document.querySelectorAll('[data-dashgo]').forEach(function(b){b.onclick=function(){screen=b.dataset.dashgo;sq='';go()}});
  document.querySelectorAll('[data-dashreceive]').forEach(function(b){b.onclick=function(){screen='liv';sq='';go();openLiv(b.dataset.dashreceive)}});
  document.querySelectorAll('[data-open-recap]').forEach(function(b){b.onclick=ouvrirRecapMatin});
