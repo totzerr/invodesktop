@@ -2172,3 +2172,7 @@ body.invo-modal-open #cartbar{display:none!important}
 .settings-nav button.on{font-weight:800!important}
 
 .workspace-signout{margin-top:3px!important;color:#B42318!important}
+
+/* Desktop overview: one clear operational flow. */
+#s-dash .wb-overview{display:grid !important;grid-template-columns:minmax(0,1fr) !important;gap:28px !important}
+#s-dash .wb-performance,#s-dash .wb-stock{min-width:0}
