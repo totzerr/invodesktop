@@ -26,7 +26,7 @@
  };
 
  function widgetsDuDashboard(){
-  const root=document.querySelector('#s-dash .workbench, #s-dash .profile-dashboard');
+  const root=document.querySelector('#s-dash .sway-widget-grid, #s-dash .workbench, #s-dash .profile-dashboard');
   if(!root)return[];
   return [...root.children].filter(el=>el.tagName==='SECTION'&&!el.classList.contains('sway-drag-ready'));
  }
@@ -38,11 +38,11 @@
   ordre.forEach(k=>{const el=[...root.children].find(x=>nomWidget(x)===k);if(el)root.appendChild(el)});
  }
  function activerWidgets(){
-  const root=document.querySelector('#s-dash .workbench, #s-dash .profile-dashboard');if(!root)return;
+  const root=document.querySelector('#s-dash .sway-widget-grid, #s-dash .workbench, #s-dash .profile-dashboard');if(!root)return;
   appliquerOrdre(root);
   [...root.children].filter(el=>el.tagName==='SECTION').forEach(function(el,index){
    if(el.dataset.swayWidget)return;el.dataset.swayWidget='1';el.dataset.widgetKey=nomWidget(el)||'widget-'+index;
-   el.insertAdjacentHTML('afterbegin','<button class="sway-drag-handle" type="button" aria-label="Maintenir pour déplacer ce bloc" title="Maintenir pour déplacer">⠿</button>');
+   if(!el.querySelector('.sway-drag-handle'))el.insertAdjacentHTML('afterbegin','<button class="sway-drag-handle" type="button" aria-label="Maintenir pour déplacer ce bloc" title="Maintenir pour déplacer">⠿</button>');
    let timer=null,actif=false,startX=0,startY=0;
    const stop=function(){clearTimeout(timer);if(actif){actif=false;el.classList.remove('sway-dragging');document.body.classList.remove('sway-reordering');sauvegarder(root)}};
    el.addEventListener('pointerdown',function(e){if(e.target.closest('button:not(.sway-drag-handle),a,input,select,textarea'))return;startX=e.clientX;startY=e.clientY;timer=setTimeout(function(){actif=true;el.classList.add('sway-dragging');document.body.classList.add('sway-reordering');el.setPointerCapture?.(e.pointerId)},420)});
@@ -50,6 +50,7 @@
    el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('lostpointercapture',stop);
   });
  }
+ window.SwayWidgets=activerWidgets;
  const observer=new MutationObserver(()=>requestAnimationFrame(activerWidgets));
  const dash=document.getElementById('s-dash');if(dash)observer.observe(dash,{childList:true,subtree:true});
  requestAnimationFrame(activerWidgets);
