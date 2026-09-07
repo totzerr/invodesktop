@@ -3,7 +3,7 @@ name: Publier Sway Desktop
 on:
   push:
     branches:
-      - sway-liquid-glass
+      - sway-classic
   workflow_dispatch:
 
 permissions:
