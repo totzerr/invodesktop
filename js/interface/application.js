@@ -233,7 +233,7 @@ function ouvrirTraitementVente(mvId){
 
 /* Marque affichée : les clés locales historiques restent volontairement inchangées
    afin de conserver les comptes et données déjà enregistrés sur cet appareil. */
-const SWAY_MARQUE={nom:'Sway',logo:'assets/sway-logo-black.png'};
+const SWAY_MARQUE={nom:'Sway',logo:'assets/sway-logo-source-black.png'};
 function texteSway(texte){return String(texte||'').replace(/\bINVO\b/g,'SWAY').replace(/\bInvo\b/g,'Sway').replace(/\binvo\b/g,'Sway');}
 function appliquerMarqueSway(racine){
  const scope=racine||document;
