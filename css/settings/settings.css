@@ -1,4 +1,3 @@
-:root{
   --ink:#18202E;
   --steel-d:#687386;
   --invo-text-strong:#18202E;
@@ -189,3 +188,4 @@ body.invo-modal-open #cartbar{display:none!important}
 .inv-progress-track{display:block;width:100%;height:5px;min-height:5px;max-height:5px}
 
 /* INVO · ACCUEIL · identité établissement et lecture instantanée des alertes */
+:root{

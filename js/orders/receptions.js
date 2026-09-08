@@ -74,7 +74,8 @@ function renderLiv(){
    return '<button class="pending-order-card" data-receivecmd="'+c.id+'"><span class="pending-order-icon">🛒</span><span><b>'+escapeHTML(c.fournisseur||'Fournisseur')+'</b><small>'+detail+'</small></span><em class="'+s.cls+'">'+s.txt+'</em><i>›</i></button>';
   }).join('');
   body=`<div class="scan-actions">
-   <div class="hint desktop-scan-note">📱 Les bons de livraison se scannent dans INVO mobile. Les livraisons validées apparaissent ensuite ici.</div>
+   <button class="scan-btn primary" id="scanLiv"><span class="sb-i">📷</span>
+    <span class="sb-l">${t('scScannerBon')}</span></button>
    <button class="scan-btn" id="newLiv"><span class="sb-i">✍️</span>
     <span class="sb-l">${t('newLiv')}</span></button></div>
    ${commandesEnAttente?'<div class="eyebrow">COMMANDES À RÉCEPTIONNER</div><div class="pending-orders">'+commandesEnAttente+'</div>':''}
@@ -88,6 +89,7 @@ function renderLiv(){
   <div class="h-title">${livTab==='recep'?t('livT'):'Prévisions'}</div>
   <div class="h-sub">${livTab==='recep'?t('livS'):''}</div>${sub}${body}`;
  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{livTab=b.dataset.lt;renderLiv()});
+ const sc=document.getElementById('scanLiv');if(sc)sc.onclick=nouveauScan;
  const nl=document.getElementById('newLiv');if(nl)nl.onclick=()=>openLiv();
  document.querySelectorAll('[data-livix]').forEach(c=>c.onclick=()=>voirLivraison(+c.dataset.livix));
  document.querySelectorAll('[data-brou]').forEach(b=>b.onclick=()=>{

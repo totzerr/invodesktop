@@ -1,6 +1,5 @@
 /* ── SCAN DES BONS DE LIVRAISON ── */
 .scan-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
-.scan-actions .desktop-scan-note{margin-bottom:0;display:flex;align-items:center;text-align:left}
 .scan-btn{background:var(--surface,#FFFFFF);border:1px solid var(--border,#DCE2EA);border-radius:13px;
 padding:16px 12px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;
 align-items:center;gap:7px;color:var(--ink,#18202E);box-shadow:var(--shadow-card);transition:transform .1s}
@@ -129,3 +128,4 @@ font-size:11.5px;color:var(--blue,#254A67);display:flex;align-items:center;gap:9
 border-radius:10px;padding:10px 13px;font-size:11.5px;color:var(--blue,#254A67);
 margin-bottom:13px;line-height:1.5}
 @media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+@media(prefers-reduced-motion:reduce){.drawer,.dr-bg,.burger i{transition:none}}

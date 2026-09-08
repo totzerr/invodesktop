@@ -1,4 +1,3 @@
-@media(prefers-reduced-motion:reduce){.drawer,.dr-bg,.burger i{transition:none}}
 .prev-card{background:var(--surface,#FFFFFF);border:1px solid var(--border,#DCE2EA);
 border-left:3px solid var(--green,#235A34);border-radius:12px;padding:13px 15px;margin-bottom:9px;
 box-shadow:var(--shadow-card)}
@@ -127,3 +126,4 @@ border:1px solid var(--border,#DCE2EA)}
 #s-caisse .eyebrow,#s-dec .eyebrow,#s-liv .eyebrow,#s-stock .eyebrow,#s-inv .eyebrow,#s-bil .eyebrow{color:#4355F5}
 
 
+/* ═════ VERSION ORDINATEUR ═════

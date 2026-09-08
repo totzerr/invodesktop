@@ -11,7 +11,7 @@ function filesIn(directory,extension){
  const absolute=join(rootPath,directory);
  return readdirSync(absolute,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()
   ?filesIn(join(directory,entry.name),extension)
-  :(entry.name.endsWith(extension)?[join(directory,entry.name)]:[]));
+  :(entry.name.endsWith(extension) && !entry.name.includes(" 2.") ? [join(directory,entry.name)] : []));
 }
 const appScripts=filesIn('js','.js').filter(file=>!file.endsWith('bootstrap.js'));
 const appStyles=filesIn('css','.css');
@@ -27,6 +27,14 @@ test('les modules JavaScript et les feuilles de style sont séparés et valides'
   assert.ok(appScripts.length>=20,'l’application doit être découpée en modules');
   assert.ok(appStyles.length>=15,'les styles doivent être découpés par responsabilité');
   appScripts.forEach(file=>assert.doesNotThrow(()=>new vm.Script(readFileSync(join(rootPath,file),'utf8'),{filename:file})));
+});
+
+test('Bureau conserve son identité et le scan des bons de livraison',()=>{
+ assert.match(source,/<title>Sway — Bureau<\/title>/);
+ assert.match(source,/--invo-version:"SWAY BUREAU"/);
+ assert.match(source,/id="scanLiv"/);
+ assert.match(source,/const sc=document\.getElementById\('scanLiv'\);if\(sc\)sc\.onclick=nouveauScan/);
+ assert.doesNotMatch(source,/Les bons de livraison se scannent dans INVO mobile/);
 });
 
 function extractCore(source){
