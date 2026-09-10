@@ -239,9 +239,9 @@ function openReglages(){
  if(bkOut)bkOut.onclick=async()=>{bkOut.disabled=true;try{await exporterSauvegarde();toast(t('backupOk'))}catch(e){toast(t('backupRead'))}bkOut.disabled=false};
  if(bkBtn&&bkIn)bkBtn.onclick=()=>bkIn.click();
  const pilotAutoBtn=document.getElementById('pilotAutoStart');
- if(pilotAutoBtn)pilotAutoBtn.onclick=async()=>{pilotAutoBtn.disabled=true;await chargerParcoursDemonstration(true);};
+ if(pilotAutoBtn)pilotAutoBtn.onclick=async()=>{pilotAutoBtn.disabled=true;try{await chargerParcoursDemonstration(true)}finally{pilotAutoBtn.disabled=false}};
  const pilotAutoStop=document.getElementById('pilotAutoStop');
- if(pilotAutoStop)pilotAutoStop.onclick=async()=>{pilotAutoStop.disabled=true;await arreterDemoCaisse();};
+ if(pilotAutoStop)pilotAutoStop.onclick=async()=>{pilotAutoStop.disabled=true;try{await arreterDemoCaisse()}finally{pilotAutoStop.disabled=false}};
  if(bkIn)bkIn.onchange=async()=>{const f=bkIn.files&&bkIn.files[0];bkIn.value='';await importerSauvegarde(f)};
  const re_=document.getElementById('rEtab');
  if(re_)re_.oninput=e=>{st.etabNom=e.target.value;mettreAJourMarqueEtablissement();save()};

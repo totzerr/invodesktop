@@ -258,8 +258,6 @@ function observerMarqueSway(){
  });}).observe(document.body,{childList:true,subtree:true,characterData:true});
 }
 
-/* Connexion désactivée pour la phase de test.
-   Le code des comptes reste présent (creerCompte, connecter, showAuth…)
-   et pourra être réactivé en remplaçant l'appel ci-dessous. */
+/* Le démarrage exige une session Supabase avant le chargement des données. */
 observerMarqueSway();
 (async()=>{await bootApp();appliquerMarqueSway(document)})();

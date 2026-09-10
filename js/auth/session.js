@@ -11,7 +11,7 @@ const dataKey=()=>session&&session.supabase&&session.etabId?'sway_data_'+session
 const peutSynchroniserEspace=()=>{const u=utilisateurConnecte(),roles=rolesUtilisateur(u);return !!(session&&session.supabase&&session.etabId&&session.userId&&roles.some(r=>['admin','gestion','direction'].includes(r)));};
 let syncEspaceTimer=null,syncEspaceEnCours=false;
 async function synchroniserEspaceSway(){
- if(!peutSynchroniserEspace()||syncEspaceEnCours||!window.SwaySupabaseAuth)return;
+ if(st.demoParcours||!peutSynchroniserEspace()||syncEspaceEnCours||!window.SwaySupabaseAuth)return;
  syncEspaceEnCours=true;
  try{const copie=JSON.parse(JSON.stringify(st));delete copie.cloudUpdatedAt;const resultat=await window.SwaySupabaseAuth.saveWorkspaceState(session.etabId,copie,session.userId);if(resultat.error)console.warn('Synchronisation Sway différée :',resultat.error)}catch(error){console.warn('Synchronisation Sway différée :',error)}finally{syncEspaceEnCours=false}
 }

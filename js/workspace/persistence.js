@@ -102,6 +102,7 @@ async function preparerTestReel(){
 
 /* ── Retour volontaire à la démonstration, toujours précédé d'une sauvegarde. ── */
 async function resetDemo(options={}){
+ if(session&&session.supabase){toast('La démo caisse est temporairement indisponible dans un espace connecté pour protéger vos données.');return false}
  const silencieux=!!options.silencieux,sauvegarder=options.sauvegarder!==false;
  let avant;
  if(sauvegarder){try{avant=await creerSauvegarde()}catch(e){toast(t('backupRead'));return false}}
@@ -130,6 +131,7 @@ async function arreterDemoCaisse(){
 /* Parcours entièrement fictif : il sert à vérifier les connexions commande,
    réception et caisse sans présenter ces données comme celles d'un restaurant. */
 async function chargerParcoursDemonstration(fluxAutomatique){
+ if(session&&session.supabase){toast('La démo caisse est temporairement indisponible dans un espace connecté pour protéger vos données.');return false}
  let avant;
  try{avant=await creerSauvegarde()}catch(e){toast(t('backupRead'));return}
  if(!confirm(t('pilotDemoConfirm')))return;
