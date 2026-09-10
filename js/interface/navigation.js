@@ -35,29 +35,79 @@ function renderNav(){
    <button class="workspace-settings workspace-signout" data-signout="1"><span>↪</span>${t('seDeconnecter')}</button>
    <p>${t('slogan')}</p></div>`;
  const tabs=items;
- document.getElementById('nav').innerHTML=`${tabs.map(x=>`<button class="tab-item ${screen===x.id?'on':''}" data-nav="${x.id}">
-  <span class="tab-icon">${x.i}</span><span>${x.l}</span>${x.b?`<i>${x.b>99?'99+':x.b}</i>`:''}</button>`).join('')}
-  <button class="tab-item tab-more" data-menu="1"><span class="tab-icon">•••</span><span>Plus</span></button>`;
+ const groupesBureau=[
+  {label:'PILOTAGE',ids:['dash']},
+  {label:'ACTIVITÉ',ids:['caisse','dec']},
+  {label:'GESTION',ids:['liv','cmd','stock','inv']},
+  {label:'SUIVI',ids:['bil','admin']}
+ ];
+ document.getElementById('nav').innerHTML=groupesBureau.map(function(groupe){
+  const onglets=tabs.filter(function(x){return groupe.ids.includes(x.id)});
+  if(!onglets.length)return '';
+  return `<span class="desktop-nav-label">${groupe.label}</span>${onglets.map(x=>`<button class="tab-item ${screen===x.id?'on':''}" data-nav="${x.id}">
+   <span class="tab-icon">${x.i}</span><span>${x.l}</span>${x.b?`<i>${x.b>99?'99+':x.b}</i>`:''}</button>`).join('')}`;
+ }).join('');
  document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{screen=b.dataset.nav;sq='';fermerMenu();go()});
  document.querySelectorAll('[data-reg]').forEach(b=>b.onclick=()=>{fermerMenu();openReglages()});
  document.querySelectorAll('[data-signout]').forEach(b=>b.onclick=async()=>{fermerMenu();if(confirm('Se déconnecter de Sway ?'))await deconnecter()});
  document.querySelectorAll('[data-menu]').forEach(b=>b.onclick=()=>basculerMenu());
+ synchroniserBoutonNavigation();
 }
 
 /* ── Ouverture / fermeture du menu ── */
+const NAVIGATION_BUREAU_MEDIA='(min-width:900px)';
+const NAVIGATION_BUREAU_KEY='sway_sidebar_collapsed_v1';
+const estNavigationBureau=()=>typeof window.matchMedia==='function'&&window.matchMedia(NAVIGATION_BUREAU_MEDIA).matches;
+function lireNavigationBureauReduite(){
+ try{return window.localStorage.getItem(NAVIGATION_BUREAU_KEY)==='1'}catch(error){return false}
+}
+function memoriserNavigationBureauReduite(reduite){
+ try{window.localStorage.setItem(NAVIGATION_BUREAU_KEY,reduite?'1':'0')}catch(error){}
+}
+function synchroniserBoutonNavigation(){
+ const bouton=document.getElementById('burgerBtn');if(!bouton)return;
+ const libelle=bouton.querySelector('.burger-label');
+ if(estNavigationBureau()){
+  const reduite=document.body.classList.contains('sway-sidebar-collapsed');
+  bouton.classList.remove('open');bouton.setAttribute('aria-controls','nav');bouton.setAttribute('aria-expanded',String(!reduite));
+  bouton.setAttribute('aria-label',reduite?'Déployer le menu':'Réduire le menu');if(libelle)libelle.textContent=reduite?'Déployer':'Réduire';
+ }else{
+  const tiroir=document.getElementById('drawer'),ouvert=!!(tiroir&&tiroir.classList.contains('on'));
+  bouton.setAttribute('aria-controls','drawer');bouton.setAttribute('aria-expanded',String(ouvert));bouton.setAttribute('aria-label',ouvert?'Fermer le menu':'Ouvrir le menu');if(libelle)libelle.textContent='Menu';
+ }
+}
+function definirNavigationBureauReduite(reduite,memoriser){
+ document.body.classList.toggle('sway-sidebar-collapsed',!!reduite&&estNavigationBureau());
+ if(memoriser)memoriserNavigationBureauReduite(!!reduite);
+ synchroniserBoutonNavigation();
+}
+function initialiserNavigationBureau(){
+ definirNavigationBureauReduite(estNavigationBureau()&&lireNavigationBureauReduite(),false);
+}
 function ouvrirMenu(){
  document.getElementById('drawer').classList.add('on');
  document.getElementById('drBg').classList.add('on');
  document.getElementById('burgerBtn').classList.add('open');
+ synchroniserBoutonNavigation();
 }
 function fermerMenu(){
  document.getElementById('drawer').classList.remove('on');
  document.getElementById('drBg').classList.remove('on');
  document.getElementById('burgerBtn').classList.remove('open');
+ synchroniserBoutonNavigation();
 }
 function basculerMenu(){
+ if(estNavigationBureau()){
+  definirNavigationBureauReduite(!document.body.classList.contains('sway-sidebar-collapsed'),true);return;
+ }
  document.getElementById('drawer').classList.contains('on')?fermerMenu():ouvrirMenu();
 }
+let navigationBureauViewport=estNavigationBureau();
+window.addEventListener('resize',function(){
+ const bureau=estNavigationBureau();if(bureau===navigationBureauViewport)return;
+ navigationBureauViewport=bureau;fermerMenu();definirNavigationBureauReduite(bureau&&lireNavigationBureauReduite(),false);
+});
+initialiserNavigationBureau();
 
 function go(){
 if(!peutAccederOnglet(screen))screen='dash';
