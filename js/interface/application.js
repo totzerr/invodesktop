@@ -4,6 +4,7 @@ async function bootApp(){
  document.body.classList.remove('locked');
  document.getElementById('auth').classList.remove('on');
  await loadAuth();
+ if(!session||!session.supabase){showAuth('login',{type:'info',txt:'Connectez-vous pour accéder à votre espace Sway.'});return}
  if(session&&session.needsWorkspace){showAuth('workspace');return}
  if(session&&session.invitationAccepted){session.invitationAccepted=false;await saveSess();showAuth('new-password',{type:'ok',txt:'Invitation acceptée. Choisissez maintenant votre mot de passe.'});return}
  await load();

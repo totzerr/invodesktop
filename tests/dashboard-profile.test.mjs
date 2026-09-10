@@ -11,7 +11,7 @@ function filesIn(directory,extension){
  const absolute=join(rootPath,directory);
  return readdirSync(absolute,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()
   ?filesIn(join(directory,entry.name),extension)
-  :(entry.name.endsWith(extension) && !entry.name.includes(" 2.") ? [join(directory,entry.name)] : []));
+  :(entry.name.endsWith(extension) && !/\s\d+\./.test(entry.name) ? [join(directory,entry.name)] : []));
 }
 const appScripts=filesIn('js','.js').filter(file=>!file.endsWith('bootstrap.js'));
 const appStyles=filesIn('css','.css');
@@ -20,6 +20,14 @@ const source=[
  ...appScripts.map(file=>readFileSync(join(rootPath,file),'utf8')),
  ...appStyles.map(file=>readFileSync(join(rootPath,file),'utf8'))
 ].join('\n');
+
+test("Bureau exige une session Supabase valide avant d ouvrir les données",()=>{
+ const authSource=readFileSync(join(rootPath,"js/auth/session.js"),"utf8");
+ const appSource=readFileSync(join(rootPath,"js/interface/application.js"),"utf8");
+ assert.ok(authSource.includes("session=null;"));
+ assert.ok(!authSource.includes("else authMode='local'"));
+ assert.ok(appSource.includes("if(!session||!session.supabase){showAuth('login'"));
+});
 
 test('les modules JavaScript et les feuilles de style sont séparés et valides',()=>{
   assert.match(source,/js\/bootstrap\.js/);

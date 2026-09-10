@@ -21,7 +21,7 @@ function demarrerSynchronisationDirecteSway(){
  window.SwaySupabaseAuth.watchWorkspaceState(session.etabId,payload=>{const distant=payload&&payload.new;if(!distant||distant.updated_by===session.userId||!distant.state||typeof distant.state!=='object')return;st=Object.assign(st,distant.state,{cloudUpdatedAt:distant.updated_at||''});Store.set(dataKey(),st);if(typeof renderAll==='function')renderAll();if(typeof toast==='function')toast('Mise à jour reçue de l’équipe.');});
 }
 const loadAuth=async()=>{
- auth=(await Store.get(AUTH_KEY))||{users:{}};session=await Store.get(SESS_KEY);
+ auth=(await Store.get(AUTH_KEY))||{users:{}};session=null;
  if(!auth.users||typeof auth.users!=='object')auth.users={};
  const service=window.SwaySupabaseAuth;
  if(service&&service.available&&service.available()){
@@ -38,7 +38,7 @@ const loadAuth=async()=>{
     return;
    }
   }catch(error){console.warn('Session Sway indisponible :',error)}
- }else authMode='local';
+ }else authMode='online';
  let changed=false;
  Object.values(auth.users).forEach(u=>{
  const roles=rolesUtilisateur(u);if(!Array.isArray(u.roles)||u.roles.join('|')!==roles.join('|')){u.roles=roles;changed=true}
