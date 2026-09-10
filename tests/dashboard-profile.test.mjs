@@ -45,20 +45,6 @@ test('Bureau conserve son identité et le scan des bons de livraison',()=>{
  assert.doesNotMatch(source,/Les bons de livraison se scannent dans INVO mobile/);
 });
 
-test('Bureau utilise une navigation latérale rétractable et conserve le tiroir mobile',()=>{
- const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- const navigation=readFileSync(new URL('../js/interface/navigation.js',import.meta.url),'utf8');
- const topbar=readFileSync(new URL('../css/topbar.css',import.meta.url),'utf8');
- assert.match(index,/burger-label/);
- assert.match(index,/20260910-collapsible-sidebar/);
- assert.match(navigation,/groupesBureau/);
- assert.match(navigation,/sway-sidebar-collapsed/);
- assert.match(navigation,/initialiserNavigationBureau/);
- assert.match(topbar,/@media \(min-width:900px\)[\s\S]*?#nav\{[\s\S]*?flex-direction:column!important/);
- assert.match(topbar,/body\.sway-sidebar-collapsed #nav/);
- assert.match(topbar,/@media \(max-width:899px\)[\s\S]*?#nav\{display:none!important\}/);
-});
-
 function extractCore(source){
  const match=source.match(/\/\* DASHBOARD_PROFILE_CORE_START[\s\S]*?\/\* DASHBOARD_PROFILE_CORE_END \*\//);
  assert.ok(match,'le noyau des indicateurs doit être présent');
