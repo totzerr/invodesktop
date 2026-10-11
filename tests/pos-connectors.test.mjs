@@ -9,6 +9,8 @@ test('les réglages permettent de choisir Cashpad ou Lightspeed',()=>{
  assert.match(source,/data-caisse-provider="lightspeed"/);
  assert.match(source,/fournisseurCaisseActuel\(\)/);
  assert.match(source,/fournisseur:'lightspeed'/);
+ assert.match(source,/id="posSettingsShortcut"/);
+ assert.match(source,/Cashpad et Lightspeed sont disponibles/);
 });
 
 test('Lightspeed K-Series est préparé avec OAuth côté serveur',()=>{

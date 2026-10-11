@@ -243,6 +243,7 @@ function openReglages(){
  settingsTab=typeof arguments[0]==='string'?arguments[0]:(settingsTab||'general');
  if(settingsTab==='users'&&!peutGererRoles())settingsTab='general';
  const dos=st.doseurs||{actif:false,releves:{}};
+ const fournisseurCaisse=fournisseurCaisseActuel(),nomFournisseurCaisse=fournisseurCaisse==='lightspeed'?'Lightspeed Restaurant':'Cashpad';
  const textePilote=st.demoParcours?(st.live?'Démo caisse active.':'Démo caisse prête.'):(st.modePilote?t('pilotOn'):t('pilotS')),recapMatin=preferencesRecapMatin();
  const etatPilote=st.demoParcours?(st.live?'Auto':'Démo'):(st.modePilote?'Actif':'Prêt');
  const general=`
@@ -275,6 +276,10 @@ function openReglages(){
   <section class="settings-group">
    <div class="settings-group-title">${settingsIcon('users')}<span>Compte</span></div>
    <div class="settings-card"><div class="settings-mini-action"><span>${settingsIcon('users')}<span><b>${session&&session.supabase?'Compte Sway connecté':'Connexion Sway'}</b><small>${session&&session.supabase?'Connexion e-mail active pour '+escapeHTML(session.email)+'.':'Activez la connexion sécurisée par e-mail et mot de passe.'}</small></span></span><button class="settings-text-button" id="swayAuthAction">${session&&session.supabase?'Se déconnecter':'Se connecter'}${settingsIcon('arrow')}</button></div></div>
+  </section>
+  <section class="settings-group">
+   <div class="settings-group-title">${settingsIcon('data')}<span>Connexion caisse</span></div>
+   <div class="settings-card"><div class="settings-mini-action"><span>${settingsIcon('data')}<span><b>Logiciel de caisse</b><small>Choix actuel : ${nomFournisseurCaisse}. Cashpad et Lightspeed sont disponibles.</small></span></span><button class="settings-text-button" id="posSettingsShortcut">Choisir${settingsIcon('arrow')}</button></div></div>
   </section>`;
  const outils=`${connexionCaisseHTML()}<section class="settings-group">
    <div class="settings-group-title">${settingsIcon('hardware')}<span>Matériel</span></div>
@@ -328,6 +333,7 @@ function openReglages(){
  document.getElementById('bgR').onclick=e=>{if(e.target.id==='bgR')closeModal()};
  document.getElementById('rFerm').onclick=closeModal;
  document.querySelectorAll('[data-settings]').forEach(b=>b.onclick=()=>openReglages(b.dataset.settings));
+ const posSettingsShortcut=document.getElementById('posSettingsShortcut');if(posSettingsShortcut)posSettingsShortcut.onclick=()=>openReglages('outils');
  document.querySelectorAll('[data-caisse-provider]').forEach(b=>b.onclick=async()=>{
   const fournisseur=b.dataset.caisseProvider;if(!['cashpad','lightspeed'].includes(fournisseur)||fournisseur===fournisseurCaisseActuel())return;
   st.caisse={...(st.caisse&&typeof st.caisse==='object'?st.caisse:{}),fournisseur,updatedAt:Date.now()};

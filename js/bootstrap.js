@@ -1,7 +1,7 @@
 /* SWAY · point d'entrée applicatif
    Charge les modules dans un ordre explicite. L'index.html reste volontairement léger. */
 (()=>{
- const version='20261011-pos-connectors';
+ const version='20261011-pos-connectors-2';
  const scripts=[
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.102.0/dist/umd/supabase.js',
   'js/supabase-auth.js',
