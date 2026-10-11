@@ -409,6 +409,18 @@ test(path+' prépare une relève email sécurisée sans simuler de connexion',()
  assert.doesNotMatch(source,/id="aemPassword"|id="aemSecret"/);
 });
 
+test(path+' prépare Cashpad sans simuler une connexion ni stocker de secret',()=>{
+ assert.match(source,/Connexion caisse/);
+ assert.match(source,/Connecteur partenaire à activer/);
+ assert.match(source,/SWAY ne déclenche ni n’encaisse aucun paiement/);
+ assert.match(source,/id="cashpadInstallation"/);
+ assert.match(source,/id="cashpadServeur" type="url"/);
+ assert.match(source,/url\.protocol!==['"]https:['"]/);
+ assert.match(source,/Le futur jeton Cashpad ne sera jamais stocké dans ce navigateur/);
+ assert.match(source,/st\.cashpad=\{installation,serveur:/);
+ assert.doesNotMatch(source,/id="cashpad(?:Password|Secret|Token)"/i);
+});
+
 test(path+' convertit les doses cl ou ml en fractions de bouteille pour les boissons seulement',()=>{
  const context=createBeverageBottleCore([{id:'aperol',u:'btl',bottle:true,ct:100,ctu:'cl',px:14}]);
  const drinkCl={k:'drink',fu:{aperol:'cl'}},drinkMl={k:'drink',fu:{aperol:'ml'}},food={k:'food',fu:{aperol:'btl'}};
