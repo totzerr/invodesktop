@@ -123,6 +123,50 @@ function optionsProfilMetier(){
  const actuel=profilMetierActuel();
  return '<option value="" '+(!actuel?'selected':'')+'>Vue générale (par défaut)</option>'+PROFILS_METIER.map(function(p){return '<option value="'+p.id+'" '+(actuel===p.id?'selected':'')+'>'+p.i+' '+p.n+'</option>'}).join('');
 }
+function configurationCashpad(){
+ const source=st.cashpad&&typeof st.cashpad==='object'?st.cashpad:{};
+ return{
+  installation:String(source.installation||''),
+  serveur:String(source.serveur||''),
+  flux:Array.isArray(source.flux)&&source.flux.length?source.flux:['ventes','annulations','paiements'],
+  etat:source.etat==='prepare'?'prepare':'draft',
+  updatedAt:Number(source.updatedAt)||0
+ };
+}
+function champCashpad(v){return escapeHTML(String(v||''))}
+function connexionCashpadHTML(){
+ const cashpad=configurationCashpad(),prepare=cashpad.etat==='prepare'&&cashpad.installation&&cashpad.serveur;
+ const flux=[
+  {id:'ventes',nom:'Ventes clôturées',aide:'Tickets et quantités vendues'},
+  {id:'annulations',nom:'Annulations & offerts',aide:'Pour expliquer les écarts de stock'},
+  {id:'paiements',nom:'Moyens de paiement',aide:'Ventilation, sans encaissement dans SWAY'},
+  {id:'catalogue',nom:'Catalogue produits',aide:'Correspondance Cashpad ↔ SWAY'}
+ ];
+ return `<section class="settings-group cashpad-settings">
+  <div class="settings-group-title">${settingsIcon('data')}<span>Connexion caisse</span></div>
+  <p class="settings-intro">Préparez la remontée des données Cashpad vers SWAY. SWAY ne déclenche ni n’encaisse aucun paiement.</p>
+  <div class="cashpad-card">
+   <div class="cashpad-head">
+    <div class="cashpad-identity"><span class="cashpad-mark" aria-hidden="true">C</span><span><small>FOURNISSEUR DE CAISSE</small><b>Cashpad</b><em>Connecteur partenaire à activer</em></span></div>
+    <span class="pill-etat cashpad-state ${prepare?'prepared':'soon'}">${prepare?'PRÊT POUR ACTIVATION':'À CONFIGURER'}</span>
+   </div>
+   <div class="cashpad-flow" aria-label="Flux de données de Cashpad vers SWAY"><span>Cashpad</span><i aria-hidden="true">→</i><span>SWAY</span><small>Lecture seule</small></div>
+   <div class="cashpad-form">
+    <label><span>Identifiant de l’installation<small>Numéro ou nom communiqué par Cashpad.</small></span><input id="cashpadInstallation" value="${champCashpad(cashpad.installation)}" placeholder="Ex. cashpad-20" autocomplete="off" spellcheck="false"></label>
+    <label><span>Adresse du serveur Cashpad<small>URL HTTPS fournie pour votre établissement.</small></span><input id="cashpadServeur" type="url" value="${champCashpad(cashpad.serveur)}" placeholder="https://serveur-cashpad.example" autocomplete="off" spellcheck="false"></label>
+   </div>
+   <fieldset class="cashpad-scopes"><legend>Données à demander</legend>${flux.map(f=>`<label><input type="checkbox" data-cashpad-flow="${f.id}" ${cashpad.flux.includes(f.id)?'checked':''}><span><b>${f.nom}</b><small>${f.aide}</small></span></label>`).join('')}</fieldset>
+   <div class="cashpad-security"><span aria-hidden="true">✓</span><p><b>Accès protégé côté serveur</b><small>Le futur jeton Cashpad ne sera jamais stocké dans ce navigateur. Seuls l’identifiant, l’adresse et les flux souhaités sont préparés ici.</small></p></div>
+   <div class="cashpad-progress">
+    <span class="${cashpad.installation?'done':''}"><i>${cashpad.installation?'✓':'1'}</i>Installation</span>
+    <span class="${cashpad.serveur?'done':''}"><i>${cashpad.serveur?'✓':'2'}</i>Serveur</span>
+    <span><i>3</i>Accès API</span>
+    <span><i>4</i>Test</span>
+   </div>
+   <div class="cashpad-actions"><button class="cashpad-secondary" id="cashpadPrerequisites">Voir les prérequis</button><button class="cashpad-primary" id="cashpadSave">${prepare?'Mettre à jour':'Enregistrer la préparation'}</button></div>
+  </div>
+ </section>`;
+}
 function settingsIcon(kind){
  const icons={
   general:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"></path><path d="M9 20v-5h6v5"></path></svg>',
@@ -177,7 +221,7 @@ function openReglages(){
    <div class="settings-group-title">${settingsIcon('users')}<span>Compte</span></div>
    <div class="settings-card"><div class="settings-mini-action"><span>${settingsIcon('users')}<span><b>${session&&session.supabase?'Compte Sway connecté':'Connexion Sway'}</b><small>${session&&session.supabase?'Connexion e-mail active pour '+escapeHTML(session.email)+'.':'Activez la connexion sécurisée par e-mail et mot de passe.'}</small></span></span><button class="settings-text-button" id="swayAuthAction">${session&&session.supabase?'Se déconnecter':'Se connecter'}${settingsIcon('arrow')}</button></div></div>
   </section>`;
- const outils=`<section class="settings-group">
+ const outils=`${connexionCashpadHTML()}<section class="settings-group">
    <div class="settings-group-title">${settingsIcon('hardware')}<span>Matériel</span></div>
    <p class="settings-intro">Ces outils sont facultatifs. INVO continue de fonctionner sans matériel ni service connecté.</p>
    <div class="settings-card">
@@ -191,9 +235,8 @@ function openReglages(){
    </div>
   </section>
   <section class="settings-group">
-   <div class="settings-group-title">${settingsIcon('data')}<span>Services</span></div>
+   <div class="settings-group-title">${settingsIcon('data')}<span>Autres services</span></div>
    <div class="settings-card">
-    <div class="settings-static-row"><span>${settingsIcon('data')}<span><b>Caisse</b><small>Connexion à préparer avec le fournisseur de caisse.</small></span></span><span class="pill-etat soon">À connecter</span></div>
     <div class="settings-static-row"><span>${settingsIcon('data')}<span><b>Hygiène</b><small>Connexion à préparer avec le logiciel d’hygiène.</small></span></span><span class="pill-etat soon">À connecter</span></div>
     <div class="settings-static-row"><span>${settingsIcon('data')}<span><b>Comptabilité</b><small>Connexion à préparer avec le logiciel comptable.</small></span></span><span class="pill-etat soon">À connecter</span></div>
    </div>
@@ -230,6 +273,8 @@ function openReglages(){
  document.getElementById('bgR').onclick=e=>{if(e.target.id==='bgR')closeModal()};
  document.getElementById('rFerm').onclick=closeModal;
  document.querySelectorAll('[data-settings]').forEach(b=>b.onclick=()=>openReglages(b.dataset.settings));
+ const cashpadPrerequisites=document.getElementById('cashpadPrerequisites');if(cashpadPrerequisites)cashpadPrerequisites.onclick=ouvrirPrerequisCashpad;
+ const cashpadSave=document.getElementById('cashpadSave');if(cashpadSave)cashpadSave.onclick=enregistrerPreparationCashpad;
  const transferStart=document.getElementById('transferStart');if(transferStart)transferStart.onclick=ouvrirTransfertDonnees;
  const catalogueSwayImport=document.getElementById('catalogueSwayImport');if(catalogueSwayImport)catalogueSwayImport.onclick=async()=>{const produits=st.prods||[],resume=produits.slice(0,6).map(p=>p.n||p.name).filter(Boolean).join(', ');if(!confirm(`Importer ${produits.length} produits dans Supabase ?\n\nAucun stock ne sera modifié. Aperçu : ${resume}${produits.length>6?'…':''}`))return;catalogueSwayImport.disabled=true;const resultat=await window.SwaySupabaseAuth.importProductCatalogue(session.etabId,session.userId,produits);catalogueSwayImport.disabled=false;toast(resultat.error||`${resultat.count} produits préparés dans Supabase.`)};
  const transferSource=document.getElementById('transferSource');if(transferSource)transferSource.onclick=()=>toast('Cette connexion nécessite l’API de l’ancien logiciel ou un connecteur partenaire.');
@@ -270,4 +315,20 @@ function openReglages(){
   st.doseurs.actif=b.dataset.dos==='1';await save();openReglages();
   if(screen==='bil')renderBil()});
 }
-
+function ouvrirPrerequisCashpad(){
+ document.getElementById('modal').innerHTML=`<div class="sheet-bg" id="bgCashpadPrerequisites"><div class="sheet cashpad-prerequisites"><span class="cashpad-kicker">CASHPAD × SWAY</span><h3>Préparer l’accès Cashpad</h3><p class="sh-sub">Demandez ces éléments à votre interlocuteur Cashpad avant l’activation technique.</p><ol><li><b>Accès partenaire ou API</b><span>Un accès dédié à SWAY, limité à la lecture des données nécessaires.</span></li><li><b>Identifiant de l’installation</b><span>Le numéro ou le nom du serveur de votre établissement.</span></li><li><b>Adresse HTTPS du serveur</b><span>L’URL à utiliser depuis le connecteur sécurisé SWAY.</span></li><li><b>Environnement de test</b><span>S’il existe, pour valider les flux avant la mise en production.</span></li></ol><div class="cashpad-note">Ne saisissez jamais de mot de passe Cashpad personnel dans SWAY. Le secret technique sera installé côté serveur lors de l’activation.</div><div class="sh-actions"><button class="btn" id="cashpadPrerequisitesDone">Retour aux réglages</button></div></div></div>`;
+ document.getElementById('bgCashpadPrerequisites').onclick=e=>{if(e.target.id==='bgCashpadPrerequisites')openReglages('outils')};
+ document.getElementById('cashpadPrerequisitesDone').onclick=()=>openReglages('outils');
+}
+async function enregistrerPreparationCashpad(){
+ const installation=document.getElementById('cashpadInstallation').value.trim(),serveur=document.getElementById('cashpadServeur').value.trim().replace(/\/+$/,'');
+ const flux=[...document.querySelectorAll('[data-cashpad-flow]:checked')].map(x=>x.dataset.cashpadFlow);
+ if(!installation){toast('Renseignez l’identifiant de l’installation Cashpad.');document.getElementById('cashpadInstallation').focus();return}
+ if(!serveur){toast('Renseignez l’adresse du serveur Cashpad.');document.getElementById('cashpadServeur').focus();return}
+ let url;try{url=new URL(serveur)}catch(e){toast('L’adresse du serveur Cashpad n’est pas valide.');document.getElementById('cashpadServeur').focus();return}
+ if(url.protocol!=='https:'){toast('Utilisez une adresse Cashpad sécurisée en HTTPS.');document.getElementById('cashpadServeur').focus();return}
+ if(!flux.length){toast('Sélectionnez au moins un type de données à demander.');return}
+ document.getElementById('cashpadSave').disabled=true;
+ st.cashpad={installation,serveur:url.toString().replace(/\/$/,''),flux,etat:'prepare',updatedAt:Date.now()};
+ await save();toast('Préparation Cashpad enregistrée. Aucun accès secret n’a été stocké.');openReglages('outils');
+}
