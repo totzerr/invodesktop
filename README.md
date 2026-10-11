@@ -1,4 +1,26 @@
-# SWAY Phone — structure du code
+# Sway Bureau
+
+Application de référence de Sway pour ordinateur, dédiée au pilotage de la caisse, du stock, des commandes, des inventaires et de l'administration.
+
+## Interface de référence
+
+La branche `main` est l'unique interface de référence. Elle utilise la navigation horizontale supérieure et l'identité **Sway Bureau**.
+
+Les branches `sway-classic`, `sway-liquid-glass`, `sway-main-preview` et `theme-emerald-champagne` sont des variantes historiques. Elles ne doivent plus servir de base à de nouvelles fonctionnalités ni être publiées comme version officielle.
+
+Toute évolution d'interface doit passer par une pull request vers `main` et conserver la navigation de référence, sauf décision explicite documentée dans la pull request.
+
+## Qualité et publication
+
+Les contrôles locaux s'exécutent avec :
+
+```sh
+node --test tests/*.test.mjs
+```
+
+Le workflow GitHub Actions lance ces tests sur chaque pull request vers `main` et avant chaque publication GitHub Pages. Un échec bloque donc le déploiement.
+
+## Structure du code
 
 `index.html` contient uniquement le squelette de la page et un point d’entrée. Il reste sous 50 lignes.
 
