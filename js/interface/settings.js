@@ -134,6 +134,27 @@ function configurationCashpad(){
  };
 }
 function champCashpad(v){return escapeHTML(String(v||''))}
+function fournisseurCaisseActuel(){
+ const fournisseur=st.caisse&&typeof st.caisse==='object'?st.caisse.fournisseur:'';
+ return fournisseur==='lightspeed'?'lightspeed':'cashpad';
+}
+function configurationLightspeed(){
+ const source=st.lightspeed&&typeof st.lightspeed==='object'?st.lightspeed:{};
+ return{
+  environnement:source.environnement==='demo'?'demo':'production',
+  businessLocationId:String(source.businessLocationId||''),
+  flux:Array.isArray(source.flux)&&source.flux.length?source.flux:['financial-api','orders-api','items'],
+  etat:source.etat==='prepare'?'prepare':'draft',
+  updatedAt:Number(source.updatedAt)||0
+ };
+}
+function choixFournisseurCaisseHTML(){
+ const fournisseur=fournisseurCaisseActuel();
+ return `<div class="pos-provider-choice" role="radiogroup" aria-label="Logiciel de caisse utilisé">
+  <button type="button" class="${fournisseur==='cashpad'?'on':''}" data-caisse-provider="cashpad" role="radio" aria-checked="${fournisseur==='cashpad'}"><span class="cashpad-mark" aria-hidden="true">C</span><span><b>Cashpad</b><small>Connexion serveur partenaire</small></span><i aria-hidden="true">${fournisseur==='cashpad'?'✓':''}</i></button>
+  <button type="button" class="${fournisseur==='lightspeed'?'on':''}" data-caisse-provider="lightspeed" role="radio" aria-checked="${fournisseur==='lightspeed'}"><span class="cashpad-mark lightspeed-mark" aria-hidden="true">L</span><span><b>Lightspeed</b><small>Restaurant K-Series · OAuth 2.0</small></span><i aria-hidden="true">${fournisseur==='lightspeed'?'✓':''}</i></button>
+ </div>`;
+}
 function connexionCashpadHTML(){
  const cashpad=configurationCashpad(),prepare=cashpad.etat==='prepare'&&cashpad.installation&&cashpad.serveur;
  const flux=[
@@ -142,10 +163,7 @@ function connexionCashpadHTML(){
   {id:'paiements',nom:'Moyens de paiement',aide:'Ventilation, sans encaissement dans SWAY'},
   {id:'catalogue',nom:'Catalogue produits',aide:'Correspondance Cashpad ↔ SWAY'}
  ];
- return `<section class="settings-group cashpad-settings">
-  <div class="settings-group-title">${settingsIcon('data')}<span>Connexion caisse</span></div>
-  <p class="settings-intro">Préparez la remontée des données Cashpad vers SWAY. SWAY ne déclenche ni n’encaisse aucun paiement.</p>
-  <div class="cashpad-card">
+ return `<div class="cashpad-card">
    <div class="cashpad-head">
     <div class="cashpad-identity"><span class="cashpad-mark" aria-hidden="true">C</span><span><small>FOURNISSEUR DE CAISSE</small><b>Cashpad</b><em>Connecteur partenaire à activer</em></span></div>
     <span class="pill-etat cashpad-state ${prepare?'prepared':'soon'}">${prepare?'PRÊT POUR ACTIVATION':'À CONFIGURER'}</span>
@@ -164,7 +182,44 @@ function connexionCashpadHTML(){
     <span><i>4</i>Test</span>
    </div>
    <div class="cashpad-actions"><button class="cashpad-secondary" id="cashpadPrerequisites">Voir les prérequis</button><button class="cashpad-primary" id="cashpadSave">${prepare?'Mettre à jour':'Enregistrer la préparation'}</button></div>
-  </div>
+  </div>`;
+}
+function connexionLightspeedHTML(){
+ const lightspeed=configurationLightspeed(),prepare=lightspeed.etat==='prepare';
+ const flux=[
+  {id:'financial-api',nom:'Données financières',aide:'Ventes clôturées, paiements et taxes'},
+  {id:'orders-api',nom:'Commandes & menus',aide:'Tickets, articles, remises et annulations'},
+  {id:'items',nom:'Catalogue produits',aide:'Correspondance Lightspeed ↔ SWAY'},
+  {id:'offline_access',nom:'Synchronisation continue',aide:'Actualisation serveur sans reconnexion fréquente'}
+ ];
+ return `<div class="cashpad-card lightspeed-card">
+   <div class="cashpad-head">
+    <div class="cashpad-identity"><span class="cashpad-mark lightspeed-mark" aria-hidden="true">L</span><span><small>FOURNISSEUR DE CAISSE</small><b>Lightspeed Restaurant</b><em>K-Series · Connecteur OAuth à activer</em></span></div>
+    <span class="pill-etat cashpad-state ${prepare?'prepared':'soon'}">${prepare?'PRÊT POUR ACTIVATION':'À CONFIGURER'}</span>
+   </div>
+   <div class="cashpad-flow" aria-label="Flux de données de Lightspeed vers SWAY"><span>Lightspeed</span><i aria-hidden="true">→</i><span>SWAY</span><small>Lecture seule dans SWAY</small></div>
+   <div class="cashpad-form">
+    <label><span>Environnement<small>Utilisez Démo avant le passage en production.</small></span><select id="lightspeedEnvironment"><option value="demo" ${lightspeed.environnement==='demo'?'selected':''}>Démo / test</option><option value="production" ${lightspeed.environnement==='production'?'selected':''}>Production</option></select></label>
+    <label><span>Business Location ID <small>Facultatif avant OAuth ; il pourra être récupéré après l’autorisation.</small></span><input id="lightspeedBusinessLocation" value="${champCashpad(lightspeed.businessLocationId)}" placeholder="Ex. 123456789" autocomplete="off" spellcheck="false"></label>
+   </div>
+   <fieldset class="cashpad-scopes"><legend>Accès à demander à Lightspeed</legend>${flux.map(f=>`<label><input type="checkbox" data-lightspeed-flow="${f.id}" ${lightspeed.flux.includes(f.id)?'checked':''}><span><b>${f.nom}</b><small>${f.aide}</small></span></label>`).join('')}</fieldset>
+   <div class="cashpad-security"><span aria-hidden="true">✓</span><p><b>OAuth 2.0 géré côté serveur</b><small>Le client secret et les jetons Lightspeed ne seront jamais stockés dans ce navigateur. La connexion finale demandera l’accord du compte Lightspeed.</small></p></div>
+   <div class="cashpad-progress">
+    <span class="done"><i>✓</i>Fournisseur</span>
+    <span class="${lightspeed.environnement?'done':''}"><i>${lightspeed.environnement?'✓':'2'}</i>Environnement</span>
+    <span><i>3</i>Autorisation OAuth</span>
+    <span class="${lightspeed.businessLocationId?'done':''}"><i>${lightspeed.businessLocationId?'✓':'4'}</i>Établissement</span>
+   </div>
+   <div class="cashpad-actions"><button class="cashpad-secondary" id="lightspeedPrerequisites">Voir les prérequis</button><button class="cashpad-primary" id="lightspeedSave">${prepare?'Mettre à jour':'Enregistrer la préparation'}</button></div>
+  </div>`;
+}
+function connexionCaisseHTML(){
+ const fournisseur=fournisseurCaisseActuel();
+ return `<section class="settings-group pos-settings">
+  <div class="settings-group-title">${settingsIcon('data')}<span>Connexion caisse</span></div>
+  <p class="settings-intro">Choisissez la caisse utilisée par l’établissement, puis préparez uniquement les données nécessaires. SWAY ne déclenche ni n’encaisse aucun paiement.</p>
+  ${choixFournisseurCaisseHTML()}
+  ${fournisseur==='lightspeed'?connexionLightspeedHTML():connexionCashpadHTML()}
  </section>`;
 }
 function settingsIcon(kind){
@@ -221,7 +276,7 @@ function openReglages(){
    <div class="settings-group-title">${settingsIcon('users')}<span>Compte</span></div>
    <div class="settings-card"><div class="settings-mini-action"><span>${settingsIcon('users')}<span><b>${session&&session.supabase?'Compte Sway connecté':'Connexion Sway'}</b><small>${session&&session.supabase?'Connexion e-mail active pour '+escapeHTML(session.email)+'.':'Activez la connexion sécurisée par e-mail et mot de passe.'}</small></span></span><button class="settings-text-button" id="swayAuthAction">${session&&session.supabase?'Se déconnecter':'Se connecter'}${settingsIcon('arrow')}</button></div></div>
   </section>`;
- const outils=`${connexionCashpadHTML()}<section class="settings-group">
+ const outils=`${connexionCaisseHTML()}<section class="settings-group">
    <div class="settings-group-title">${settingsIcon('hardware')}<span>Matériel</span></div>
    <p class="settings-intro">Ces outils sont facultatifs. INVO continue de fonctionner sans matériel ni service connecté.</p>
    <div class="settings-card">
@@ -273,8 +328,15 @@ function openReglages(){
  document.getElementById('bgR').onclick=e=>{if(e.target.id==='bgR')closeModal()};
  document.getElementById('rFerm').onclick=closeModal;
  document.querySelectorAll('[data-settings]').forEach(b=>b.onclick=()=>openReglages(b.dataset.settings));
+ document.querySelectorAll('[data-caisse-provider]').forEach(b=>b.onclick=async()=>{
+  const fournisseur=b.dataset.caisseProvider;if(!['cashpad','lightspeed'].includes(fournisseur)||fournisseur===fournisseurCaisseActuel())return;
+  st.caisse={...(st.caisse&&typeof st.caisse==='object'?st.caisse:{}),fournisseur,updatedAt:Date.now()};
+  await save();openReglages('outils');
+ });
  const cashpadPrerequisites=document.getElementById('cashpadPrerequisites');if(cashpadPrerequisites)cashpadPrerequisites.onclick=ouvrirPrerequisCashpad;
  const cashpadSave=document.getElementById('cashpadSave');if(cashpadSave)cashpadSave.onclick=enregistrerPreparationCashpad;
+ const lightspeedPrerequisites=document.getElementById('lightspeedPrerequisites');if(lightspeedPrerequisites)lightspeedPrerequisites.onclick=ouvrirPrerequisLightspeed;
+ const lightspeedSave=document.getElementById('lightspeedSave');if(lightspeedSave)lightspeedSave.onclick=enregistrerPreparationLightspeed;
  const transferStart=document.getElementById('transferStart');if(transferStart)transferStart.onclick=ouvrirTransfertDonnees;
  const catalogueSwayImport=document.getElementById('catalogueSwayImport');if(catalogueSwayImport)catalogueSwayImport.onclick=async()=>{const produits=st.prods||[],resume=produits.slice(0,6).map(p=>p.n||p.name).filter(Boolean).join(', ');if(!confirm(`Importer ${produits.length} produits dans Supabase ?\n\nAucun stock ne sera modifié. Aperçu : ${resume}${produits.length>6?'…':''}`))return;catalogueSwayImport.disabled=true;const resultat=await window.SwaySupabaseAuth.importProductCatalogue(session.etabId,session.userId,produits);catalogueSwayImport.disabled=false;toast(resultat.error||`${resultat.count} produits préparés dans Supabase.`)};
  const transferSource=document.getElementById('transferSource');if(transferSource)transferSource.onclick=()=>toast('Cette connexion nécessite l’API de l’ancien logiciel ou un connecteur partenaire.');
@@ -329,6 +391,22 @@ async function enregistrerPreparationCashpad(){
  if(url.protocol!=='https:'){toast('Utilisez une adresse Cashpad sécurisée en HTTPS.');document.getElementById('cashpadServeur').focus();return}
  if(!flux.length){toast('Sélectionnez au moins un type de données à demander.');return}
  document.getElementById('cashpadSave').disabled=true;
+ st.caisse={...(st.caisse&&typeof st.caisse==='object'?st.caisse:{}),fournisseur:'cashpad',updatedAt:Date.now()};
  st.cashpad={installation,serveur:url.toString().replace(/\/$/,''),flux,etat:'prepare',updatedAt:Date.now()};
  await save();toast('Préparation Cashpad enregistrée. Aucun accès secret n’a été stocké.');openReglages('outils');
+}
+function ouvrirPrerequisLightspeed(){
+ document.getElementById('modal').innerHTML=`<div class="sheet-bg" id="bgLightspeedPrerequisites"><div class="sheet cashpad-prerequisites"><span class="cashpad-kicker">LIGHTSPEED × SWAY</span><h3>Préparer l’accès Lightspeed</h3><p class="sh-sub">Cette préparation concerne Lightspeed Restaurant K-Series et son authentification OAuth 2.0 officielle.</p><ol><li><b>Accès API approuvé</b><span>SWAY doit disposer d’un client API partenaire ; un marchand peut aussi demander l’accès à son account manager Lightspeed.</span></li><li><b>Client OAuth et URL de retour HTTPS</b><span>Le client ID, le client secret et l’URL de redirection sont configurés sur le serveur SWAY, jamais dans le navigateur.</span></li><li><b>Autorisations minimales</b><span>Demandez seulement les scopes utiles : financial-api, orders-api, items et, si nécessaire, offline_access.</span></li><li><b>Établissement à synchroniser</b><span>Après l’accord du compte Lightspeed, SWAY récupère les Business Locations accessibles et associe le bon restaurant.</span></li></ol><div class="cashpad-note">Ne saisissez jamais votre mot de passe, votre client secret ni un jeton Lightspeed dans SWAY. La prochaine étape technique sera un bouton « Autoriser avec Lightspeed » relié au backend sécurisé.</div><div class="sh-actions"><button class="btn" id="lightspeedPrerequisitesDone">Retour aux réglages</button></div></div></div>`;
+ document.getElementById('bgLightspeedPrerequisites').onclick=e=>{if(e.target.id==='bgLightspeedPrerequisites')openReglages('outils')};
+ document.getElementById('lightspeedPrerequisitesDone').onclick=()=>openReglages('outils');
+}
+async function enregistrerPreparationLightspeed(){
+ const environnement=document.getElementById('lightspeedEnvironment').value==='demo'?'demo':'production';
+ const businessLocationId=document.getElementById('lightspeedBusinessLocation').value.trim();
+ const flux=[...document.querySelectorAll('[data-lightspeed-flow]:checked')].map(x=>x.dataset.lightspeedFlow);
+ if(!flux.length){toast('Sélectionnez au moins un accès à demander à Lightspeed.');return}
+ document.getElementById('lightspeedSave').disabled=true;
+ st.caisse={...(st.caisse&&typeof st.caisse==='object'?st.caisse:{}),fournisseur:'lightspeed',updatedAt:Date.now()};
+ st.lightspeed={environnement,businessLocationId,flux,etat:'prepare',updatedAt:Date.now()};
+ await save();toast('Préparation Lightspeed enregistrée. Aucun secret OAuth n’a été stocké.');openReglages('outils');
 }

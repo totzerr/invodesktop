@@ -1,0 +1,14 @@
+/* SWAY · choix du fournisseur de caisse et variante Lightspeed */
+.pos-provider-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 12px}
+.pos-provider-choice button{display:grid;grid-template-columns:auto minmax(0,1fr) 22px;align-items:center;gap:10px;min-height:68px;padding:11px 12px;border:1px solid #DDE3EC;border-radius:14px;background:#FFF;color:#273142;font-family:inherit;text-align:left;cursor:pointer;transition:border-color .16s,box-shadow .16s,transform .16s}
+.pos-provider-choice button:hover{transform:translateY(-1px);border-color:#BFC9FF;box-shadow:0 7px 16px rgba(45,58,94,.07)}
+.pos-provider-choice button.on{border-color:#4355F5;background:#F8F9FF;box-shadow:0 0 0 3px rgba(67,85,245,.08)}
+.pos-provider-choice button>span:nth-child(2){min-width:0}
+.pos-provider-choice b{display:block;color:#202A3A;font:750 12px/1.2 Inter,system-ui,sans-serif}
+.pos-provider-choice small{display:block;margin-top:4px;color:#748095;font:500 9.5px/1.35 Inter,system-ui,sans-serif}
+.pos-provider-choice button>i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#EDF0F5;color:transparent;font:800 10px/1 Inter,system-ui,sans-serif;font-style:normal}
+.pos-provider-choice button.on>i{background:#4355F5;color:#FFF}
+.cashpad-mark.lightspeed-mark{background:#F05A28}
+.cashpad-form select{width:100%;min-width:0;height:40px;padding:9px 10px;border:1px solid #DDE3EC;border-radius:9px;background:#F8F9FB;color:#1F2937;font:600 11px Inter,system-ui,sans-serif;outline:none}
+.cashpad-form select:focus{border-color:#4355F5;box-shadow:0 0 0 3px rgba(67,85,245,.12);background:#FFF}
+@media(max-width:680px){.pos-provider-choice{grid-template-columns:1fr}}
